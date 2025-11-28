@@ -28,8 +28,8 @@ const nflTeams = {
   niners: { name: 'San Francisco 49ers', abbr: 'SF', record: '5-4-1', logo: getTeamLogo('sf') },
   colts: { name: 'Indianapolis Colts', abbr: 'IND', record: '6-3-1', logo: getTeamLogo('ind') },
   commanders: { name: 'Washington Commanders', abbr: 'WAS', record: '7-3', logo: getTeamLogo('wsh') },
-  saints: { name: 'New Orleans Saints', abbr: 'NO', record: '4-5-1', logo: getTeamLogo('no') },
-  raiders: { name: 'Las Vegas Raiders', abbr: 'LV', record: '4-6', logo: getTeamLogo('lv') },
+  saints: { name: 'New Orleans Saints', abbr: 'NO', record: '5-5-1', logo: getTeamLogo('no') },
+  raiders: { name: 'Las Vegas Raiders', abbr: 'LV', record: '4-7', logo: getTeamLogo('lv') },
 };
 
 const scheduleGames = [
