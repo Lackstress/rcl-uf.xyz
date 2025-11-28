@@ -4,7 +4,7 @@ Official website for the Redzone Championship League (RCL) - Season 4
 
 ## 🏈 About
 
-RCL is a competitive Madden league with a **$500 Super Bowl Prize**. This is the official website featuring:
+RCL is a competitive NFL Universe league with a **$500 Super Bowl Prize**. This is the official website featuring:
 
 - League information and schedule
 - Week 11 matchups with Game of the Week

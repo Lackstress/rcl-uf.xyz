@@ -8,32 +8,33 @@ import {
 // NFL Team logos from ESPN CDN
 const getTeamLogo = (teamId) => `https://a.espncdn.com/i/teamlogos/nfl/500/${teamId}.png`;
 
-// NFL Team data for schedule
+// NFL Team data for schedule with records
 const nflTeams = {
-  eagles: { name: 'Philadelphia Eagles', abbr: 'PHI', color: '#004C54', logo: getTeamLogo('phi') },
-  steelers: { name: 'Pittsburgh Steelers', abbr: 'PIT', color: '#FFB612', logo: getTeamLogo('pit') },
-  texans: { name: 'Houston Texans', abbr: 'HOU', color: '#03202F', logo: getTeamLogo('hou') },
-  titans: { name: 'Tennessee Titans', abbr: 'TEN', color: '#4B92DB', logo: getTeamLogo('ten') },
-  ravens: { name: 'Baltimore Ravens', abbr: 'BAL', color: '#241773', logo: getTeamLogo('bal') },
-  rams: { name: 'Los Angeles Rams', abbr: 'LAR', color: '#003594', logo: getTeamLogo('lar') },
-  broncos: { name: 'Denver Broncos', abbr: 'DEN', color: '#FB4F14', logo: getTeamLogo('den') },
-  dolphins: { name: 'Miami Dolphins', abbr: 'MIA', color: '#008E97', logo: getTeamLogo('mia') },
-  falcons: { name: 'Atlanta Falcons', abbr: 'ATL', color: '#A71930', logo: getTeamLogo('atl') },
-  jets: { name: 'New York Jets', abbr: 'NYJ', color: '#125740', logo: getTeamLogo('nyj') },
-  bills: { name: 'Buffalo Bills', abbr: 'BUF', color: '#00338D', logo: getTeamLogo('buf') },
-  chiefs: { name: 'Kansas City Chiefs', abbr: 'KC', color: '#E31837', logo: getTeamLogo('kc') },
-  lions: { name: 'Detroit Lions', abbr: 'DET', color: '#0076B6', logo: getTeamLogo('det') },
-  bears: { name: 'Chicago Bears', abbr: 'CHI', color: '#0B162A', logo: getTeamLogo('chi') },
-  jaguars: { name: 'Jacksonville Jaguars', abbr: 'JAX', color: '#006778', logo: getTeamLogo('jax') },
-  niners: { name: 'San Francisco 49ers', abbr: 'SF', color: '#AA0000', logo: getTeamLogo('sf') },
-  colts: { name: 'Indianapolis Colts', abbr: 'IND', color: '#002C5F', logo: getTeamLogo('ind') },
-  commanders: { name: 'Washington Commanders', abbr: 'WAS', color: '#5A1414', logo: getTeamLogo('wsh') },
-  saints: { name: 'New Orleans Saints', abbr: 'NO', color: '#D3BC8D', logo: getTeamLogo('no') },
-  raiders: { name: 'Las Vegas Raiders', abbr: 'LV', color: '#A5ACAF', logo: getTeamLogo('lv') },
+  eagles: { name: 'Philadelphia Eagles', abbr: 'PHI', record: '6-4', logo: getTeamLogo('phi') },
+  steelers: { name: 'Pittsburgh Steelers', abbr: 'PIT', record: '8-1', logo: getTeamLogo('pit') },
+  texans: { name: 'Houston Texans', abbr: 'HOU', record: '7-3', logo: getTeamLogo('hou') },
+  titans: { name: 'Tennessee Titans', abbr: 'TEN', record: '7-3', logo: getTeamLogo('ten') },
+  ravens: { name: 'Baltimore Ravens', abbr: 'BAL', record: '7-3', logo: getTeamLogo('bal') },
+  rams: { name: 'Los Angeles Rams', abbr: 'LAR', record: '6-4', logo: getTeamLogo('lar') },
+  broncos: { name: 'Denver Broncos', abbr: 'DEN', record: '6-4', logo: getTeamLogo('den') },
+  dolphins: { name: 'Miami Dolphins', abbr: 'MIA', record: '4-6', logo: getTeamLogo('mia') },
+  falcons: { name: 'Atlanta Falcons', abbr: 'ATL', record: '5-3-2', logo: getTeamLogo('atl') },
+  jets: { name: 'New York Jets', abbr: 'NYJ', record: '6-3-1', logo: getTeamLogo('nyj') },
+  bills: { name: 'Buffalo Bills', abbr: 'BUF', record: '5-5', logo: getTeamLogo('buf') },
+  chiefs: { name: 'Kansas City Chiefs', abbr: 'KC', record: '5-5', logo: getTeamLogo('kc') },
+  lions: { name: 'Detroit Lions', abbr: 'DET', record: '6-2-2', logo: getTeamLogo('det') },
+  bears: { name: 'Chicago Bears', abbr: 'CHI', record: '5-5', logo: getTeamLogo('chi') },
+  jaguars: { name: 'Jacksonville Jaguars', abbr: 'JAX', record: '5-4-1', logo: getTeamLogo('jax') },
+  niners: { name: 'San Francisco 49ers', abbr: 'SF', record: '5-4-1', logo: getTeamLogo('sf') },
+  colts: { name: 'Indianapolis Colts', abbr: 'IND', record: '6-3-1', logo: getTeamLogo('ind') },
+  commanders: { name: 'Washington Commanders', abbr: 'WAS', record: '7-3', logo: getTeamLogo('wsh') },
+  saints: { name: 'New Orleans Saints', abbr: 'NO', record: '4-5-1', logo: getTeamLogo('no') },
+  raiders: { name: 'Las Vegas Raiders', abbr: 'LV', record: '4-6', logo: getTeamLogo('lv') },
 };
 
 const scheduleGames = [
   { home: nflTeams.eagles, away: nflTeams.steelers, isGameOfWeek: true },
+  { home: nflTeams.saints, away: nflTeams.raiders, isTonight: true, time: '10:30 PM ET' },
   { home: nflTeams.texans, away: nflTeams.titans },
   { home: nflTeams.ravens, away: nflTeams.rams },
   { home: nflTeams.broncos, away: nflTeams.dolphins },
@@ -42,7 +43,39 @@ const scheduleGames = [
   { home: nflTeams.lions, away: nflTeams.bears },
   { home: nflTeams.jaguars, away: nflTeams.niners },
   { home: nflTeams.colts, away: nflTeams.commanders },
-  { home: nflTeams.saints, away: nflTeams.raiders },
+];
+
+// Playoff Picture
+const afcPlayoffs = [
+  { seed: 1, team: nflTeams.steelers, status: 'DIV', note: '1st Round Bye' },
+  { seed: 2, team: nflTeams.titans, status: 'DIV', note: '1st Round Bye' },
+  { seed: 3, team: nflTeams.texans, status: 'WC', note: 'Plays 6th seed' },
+  { seed: 4, team: nflTeams.ravens, status: 'WC', note: 'Plays 5th seed' },
+  { seed: 5, team: nflTeams.colts, status: 'WC', note: 'Plays 4th seed' },
+  { seed: 6, team: nflTeams.jets, status: 'WC', note: 'Plays 3rd seed' },
+];
+
+const afcHunt = [
+  { seed: 7, team: nflTeams.broncos },
+  { seed: 8, team: nflTeams.jaguars },
+  { seed: 9, team: nflTeams.chiefs },
+  { seed: 10, team: nflTeams.dolphins },
+];
+
+const nfcPlayoffs = [
+  { seed: 1, team: nflTeams.commanders, status: 'DIV', note: '1st Round Bye' },
+  { seed: 2, team: nflTeams.lions, status: 'DIV', note: '1st Round Bye' },
+  { seed: 3, team: nflTeams.eagles, status: 'WC', note: 'Plays 6th seed' },
+  { seed: 4, team: nflTeams.rams, status: 'WC', note: 'Plays 5th seed' },
+  { seed: 5, team: nflTeams.niners, status: 'WC', note: 'Plays 4th seed' },
+  { seed: 6, team: nflTeams.falcons, status: 'WC', note: 'Plays 3rd seed' },
+];
+
+const nfcHunt = [
+  { seed: 7, team: nflTeams.bears },
+  { seed: 8, team: nflTeams.bills },
+  { seed: 9, team: nflTeams.saints },
+  { seed: 10, team: nflTeams.raiders },
 ];
 
 const statSheets = [
@@ -353,7 +386,7 @@ function Hero() {
         </div>
 
         <p className="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">
-          The most competitive Madden league. Join elite players, compete for glory, and claim your championship.
+          The most competitive NFL Universe league on Roblox. Join elite players, compete for glory, and claim your championship.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -411,6 +444,45 @@ function Schedule() {
           <p className="text-gray-400">Official matchups for this week</p>
         </div>
 
+        {/* Tonight's Game */}
+        {scheduleGames.filter(g => g.isTonight).map((game, idx) => (
+          <div key={idx} className="mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="live-dot" />
+              <span className="text-green-400 font-orbitron font-bold">TONIGHT @ {game.time}</span>
+              <div className="live-dot" />
+            </div>
+            <div className="glass rounded-2xl p-6 md:p-8 team-card border-2 border-green-500/50 animate-pulse-slow">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 text-center">
+                  <img 
+                    src={game.home.logo} 
+                    alt={game.home.name}
+                    className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
+                  />
+                  <p className="font-semibold text-lg">{game.home.name}</p>
+                  <p className="text-gray-400 text-sm">({game.home.record})</p>
+                </div>
+                <div className="px-6">
+                  <div className="flex items-center gap-2">
+                    <div className="live-dot" />
+                    <span className="text-green-400 font-orbitron font-bold text-xl">VS</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center">
+                  <img 
+                    src={game.away.logo} 
+                    alt={game.away.name}
+                    className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
+                  />
+                  <p className="font-semibold text-lg">{game.away.name}</p>
+                  <p className="text-gray-400 text-sm">({game.away.record})</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
         {/* Game of the Week */}
         {scheduleGames.filter(g => g.isGameOfWeek).map((game, idx) => (
           <div key={idx} className="mb-8">
@@ -428,6 +500,7 @@ function Schedule() {
                     className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
                   />
                   <p className="font-semibold text-lg">{game.home.name}</p>
+                  <p className="text-gray-400 text-sm">({game.home.record})</p>
                 </div>
                 <div className="px-6">
                   <div className="flex items-center gap-2">
@@ -442,6 +515,7 @@ function Schedule() {
                     className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
                   />
                   <p className="font-semibold text-lg">{game.away.name}</p>
+                  <p className="text-gray-400 text-sm">({game.away.record})</p>
                 </div>
               </div>
             </div>
@@ -450,7 +524,7 @@ function Schedule() {
 
         {/* Regular Games */}
         <div className="grid md:grid-cols-2 gap-4">
-          {scheduleGames.filter(g => !g.isGameOfWeek).map((game, idx) => (
+          {scheduleGames.filter(g => !g.isGameOfWeek && !g.isTonight).map((game, idx) => (
             <div key={idx} className="glass rounded-xl p-4 team-card">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
@@ -459,16 +533,19 @@ function Schedule() {
                     alt={game.home.abbr}
                     className="w-10 h-10 object-contain"
                   />
-                  <span className="font-medium text-sm md:text-base">{game.home.name}</span>
-                </div>
-                <div className="px-3">
-                  <div className="flex items-center gap-1">
-                    <div className="live-dot" />
-                    <span className="text-rcl-red font-bold text-sm">VS</span>
+                  <div>
+                    <span className="font-medium text-sm md:text-base block">{game.home.name}</span>
+                    <span className="text-gray-500 text-xs">({game.home.record})</span>
                   </div>
                 </div>
+                <div className="px-3">
+                  <span className="text-rcl-red font-bold text-sm">VS</span>
+                </div>
                 <div className="flex items-center gap-3 flex-1 justify-end">
-                  <span className="font-medium text-sm md:text-base text-right">{game.away.name}</span>
+                  <div className="text-right">
+                    <span className="font-medium text-sm md:text-base block">{game.away.name}</span>
+                    <span className="text-gray-500 text-xs">({game.away.record})</span>
+                  </div>
                   <img 
                     src={game.away.logo} 
                     alt={game.away.abbr}
@@ -478,6 +555,76 @@ function Schedule() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Playoff Picture */}
+        <div className="mt-12">
+          <h3 className="font-orbitron text-2xl font-bold text-center mb-2">
+            <span className="gradient-text">PLAYOFF</span> PICTURE
+          </h3>
+          <p className="text-gray-500 text-center text-sm mb-6">12 Team Playoff Format • Division Winners get Bye</p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* AFC */}
+            <div className="glass rounded-xl p-5">
+              <h4 className="font-orbitron font-bold text-lg text-center mb-4 text-blue-400">AFC PLAYOFFS</h4>
+              <div className="space-y-2">
+                {afcPlayoffs.map((team, idx) => (
+                  <div key={idx} className={`flex items-center gap-3 p-2 rounded-lg ${team.status === 'DIV' ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-white/5'}`}>
+                    <span className="font-orbitron font-bold text-blue-400 w-6">#{team.seed}</span>
+                    <img src={team.team.logo} alt={team.team.abbr} className="w-8 h-8 object-contain" />
+                    <div className="flex-1">
+                      <span className="font-medium text-sm">{team.team.name}</span>
+                      <span className="text-gray-500 text-xs ml-2">({team.team.record})</span>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded ${team.status === 'DIV' ? 'bg-blue-500/30 text-blue-300' : 'bg-gray-500/30 text-gray-400'}`}>
+                      {team.note}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-gray-500 text-xs mt-3 text-center">— Playoff Hunt —</p>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {afcHunt.map((team, idx) => (
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-white/5 rounded opacity-60">
+                    <span className="text-gray-500 text-xs">#{team.seed}</span>
+                    <img src={team.team.logo} alt={team.team.abbr} className="w-5 h-5 object-contain" />
+                    <span className="text-gray-400 text-xs">{team.team.record}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* NFC */}
+            <div className="glass rounded-xl p-5">
+              <h4 className="font-orbitron font-bold text-lg text-center mb-4 text-red-400">NFC PLAYOFFS</h4>
+              <div className="space-y-2">
+                {nfcPlayoffs.map((team, idx) => (
+                  <div key={idx} className={`flex items-center gap-3 p-2 rounded-lg ${team.status === 'DIV' ? 'bg-red-500/20 border border-red-500/30' : 'bg-white/5'}`}>
+                    <span className="font-orbitron font-bold text-red-400 w-6">#{team.seed}</span>
+                    <img src={team.team.logo} alt={team.team.abbr} className="w-8 h-8 object-contain" />
+                    <div className="flex-1">
+                      <span className="font-medium text-sm">{team.team.name}</span>
+                      <span className="text-gray-500 text-xs ml-2">({team.team.record})</span>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded ${team.status === 'DIV' ? 'bg-red-500/30 text-red-300' : 'bg-gray-500/30 text-gray-400'}`}>
+                      {team.note}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-gray-500 text-xs mt-3 text-center">— Playoff Hunt —</p>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {nfcHunt.map((team, idx) => (
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-white/5 rounded opacity-60">
+                    <span className="text-gray-500 text-xs">#{team.seed}</span>
+                    <img src={team.team.logo} alt={team.team.abbr} className="w-5 h-5 object-contain" />
+                    <span className="text-gray-400 text-xs">{team.team.record}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
