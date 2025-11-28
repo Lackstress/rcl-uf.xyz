@@ -35,11 +35,11 @@ const nflTeams = {
 const scheduleGames = [
   { home: nflTeams.eagles, away: nflTeams.steelers, isGameOfWeek: true },
   { home: nflTeams.saints, away: nflTeams.raiders, isTonight: true, time: '10:30 PM ET' },
+  { home: nflTeams.bills, away: nflTeams.chiefs, isTonight: true, time: '10:00 PM ET' },
   { home: nflTeams.texans, away: nflTeams.titans },
   { home: nflTeams.ravens, away: nflTeams.rams },
   { home: nflTeams.broncos, away: nflTeams.dolphins },
   { home: nflTeams.falcons, away: nflTeams.jets },
-  { home: nflTeams.bills, away: nflTeams.chiefs },
   { home: nflTeams.lions, away: nflTeams.bears },
   { home: nflTeams.jaguars, away: nflTeams.niners },
   { home: nflTeams.colts, away: nflTeams.commanders },
