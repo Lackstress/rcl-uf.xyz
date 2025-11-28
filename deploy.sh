@@ -1,12 +1,24 @@
 #!/bin/bash
 
-# RCL League Website - VM Deployment Script
-# This script deploys the website on a Linux VM
+# RCL League Website Deployment Script
+# For Ubuntu/Debian VMs with Namecheap domain
 
-set -e
-
-echo "🏈 RCL League Website Deployment"
+echo "   RCL League Website Deployment"
 echo "================================="
+
+# Ask for domain and email
+read -p "Enter your domain (e.g., rcl-uf.xyz): " DOMAIN
+read -p "Enter your email for SSL certificate: " EMAIL
+
+if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
+    echo "Error: Domain and email are required!"
+    exit 1
+fi
+
+echo ""
+echo "Domain: $DOMAIN"
+echo "Email: $EMAIL"
+echo ""
 
 # Colors for output
 RED='\033[0;31m'
@@ -29,9 +41,9 @@ echo -e "${GREEN}Node.js version: $NODE_VERSION${NC}"
 echo -e "${YELLOW}Installing dependencies...${NC}"
 npm install
 
-# Build the project
+# Build the project using npx to avoid permission issues
 echo -e "${YELLOW}Building the project...${NC}"
-npm run build
+npx vite build
 
 # Check if nginx is installed, if not install it
 if ! command -v nginx &> /dev/null; then
@@ -41,8 +53,7 @@ if ! command -v nginx &> /dev/null; then
 fi
 
 # Create nginx config for the site
-SITE_NAME="rcl-uf.xyz"
-NGINX_CONFIG="/etc/nginx/sites-available/$SITE_NAME"
+NGINX_CONFIG="/etc/nginx/sites-available/$DOMAIN"
 
 echo -e "${YELLOW}Configuring Nginx...${NC}"
 
@@ -50,7 +61,7 @@ sudo tee $NGINX_CONFIG > /dev/null <<EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name $SITE_NAME www.$SITE_NAME;
+    server_name $DOMAIN www.$DOMAIN;
 
     root $(pwd)/dist;
     index index.html;
@@ -79,6 +90,9 @@ EOF
 # Enable the site
 sudo ln -sf $NGINX_CONFIG /etc/nginx/sites-enabled/
 
+# Remove default nginx site if exists
+sudo rm -f /etc/nginx/sites-enabled/default
+
 # Test nginx config
 echo -e "${YELLOW}Testing Nginx configuration...${NC}"
 sudo nginx -t
@@ -88,15 +102,23 @@ echo -e "${YELLOW}Restarting Nginx...${NC}"
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
+# Install Certbot and get SSL certificate
+echo -e "${YELLOW}Installing Certbot for SSL...${NC}"
+sudo apt-get install -y certbot python3-certbot-nginx
+
+echo -e "${YELLOW}Obtaining SSL certificate...${NC}"
+sudo certbot --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos -m $EMAIL
+
 echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}🎉 Deployment Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "Your site is now live at: ${YELLOW}http://$SITE_NAME${NC}"
+echo -e "Your site is now live at: ${YELLOW}https://$DOMAIN${NC}"
 echo ""
-echo -e "${YELLOW}Next steps for HTTPS (recommended):${NC}"
-echo "1. Install Certbot: sudo apt install certbot python3-certbot-nginx"
-echo "2. Get SSL cert: sudo certbot --nginx -d $SITE_NAME -d www.$SITE_NAME"
+echo -e "${YELLOW}Namecheap DNS Setup:${NC}"
+echo "1. Go to Namecheap > Domain List > Manage > Advanced DNS"
+echo "2. Add A Record: Host '@' -> Value: $(curl -s ifconfig.me)"
+echo "3. Add A Record: Host 'www' -> Value: $(curl -s ifconfig.me)"
 echo ""
 echo -e "${GREEN}🏈 RCL - Redzone Championship League${NC}"
