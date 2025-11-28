@@ -34,12 +34,12 @@ const nflTeams = {
 
 const scheduleGames = [
   { home: nflTeams.eagles, away: nflTeams.steelers, isGameOfWeek: true },
-  { home: nflTeams.saints, away: nflTeams.raiders, isTonight: true, time: '10:30 PM ET' },
-  { home: nflTeams.bills, away: nflTeams.chiefs, isTonight: true, time: '10:00 PM ET' },
+  { home: nflTeams.saints, away: nflTeams.raiders, isCompleted: true, homeScore: 56, awayScore: 0 },
   { home: nflTeams.texans, away: nflTeams.titans },
   { home: nflTeams.ravens, away: nflTeams.rams },
   { home: nflTeams.broncos, away: nflTeams.dolphins },
   { home: nflTeams.falcons, away: nflTeams.jets },
+  { home: nflTeams.bills, away: nflTeams.chiefs, rescheduled: true },
   { home: nflTeams.lions, away: nflTeams.bears },
   { home: nflTeams.jaguars, away: nflTeams.niners },
   { home: nflTeams.colts, away: nflTeams.commanders },
@@ -536,10 +536,19 @@ function Schedule() {
                   <div>
                     <span className="font-medium text-sm md:text-base block">{game.home.name}</span>
                     <span className="text-gray-500 text-xs">({game.home.record})</span>
+                    {game.rescheduled && (
+                      <span className="text-red-500 text-xs font-bold block">RESCHEDULED!</span>
+                    )}
                   </div>
                 </div>
                 <div className="px-3">
-                  <span className="text-rcl-red font-bold text-sm">VS</span>
+                  {game.isCompleted ? (
+                    <span className="text-white font-bold text-lg">
+                      {game.homeScore} - {game.awayScore}
+                    </span>
+                  ) : (
+                    <span className="text-rcl-red font-bold text-sm">VS</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 flex-1 justify-end">
                   <div className="text-right">
