@@ -1,14 +1,105 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { 
   Trophy, Users, Calendar, Shield, ExternalLink, 
   ChevronDown, Menu, X, Twitch, Youtube, FileText,
-  MessageCircle, BarChart3, Star, Zap, Heart, Award, Crown, Target, Swords
+  MessageCircle, BarChart3, Star, Zap, Heart, Award, Crown, Target, Swords, Lock, Eye, EyeOff
 } from 'lucide-react';
+import Panel from './components/Panel';
+import { validateCredentials, AUTH_KEY } from './config/auth';
 
 // NFL Team logos from ESPN CDN
 const getTeamLogo = (teamId) => `https://a.espncdn.com/i/teamlogos/nfl/500/${teamId}.png`;
 
-// NFL Team data for schedule with records
+// LocalStorage helpers
+const getStoredData = (key, defaultValue) => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : defaultValue;
+  } catch { return defaultValue; }
+};
+
+const saveStoredData = (key, data) => {
+  localStorage.setItem(key, JSON.stringify(data));
+};
+
+// All 32 NFL Teams data
+const allNflTeams = {
+  cardinals: { id: 'cardinals', name: 'Arizona Cardinals', abbr: 'ARI', logo: getTeamLogo('ari') },
+  falcons: { id: 'falcons', name: 'Atlanta Falcons', abbr: 'ATL', logo: getTeamLogo('atl') },
+  ravens: { id: 'ravens', name: 'Baltimore Ravens', abbr: 'BAL', logo: getTeamLogo('bal') },
+  bills: { id: 'bills', name: 'Buffalo Bills', abbr: 'BUF', logo: getTeamLogo('buf') },
+  panthers: { id: 'panthers', name: 'Carolina Panthers', abbr: 'CAR', logo: getTeamLogo('car') },
+  bears: { id: 'bears', name: 'Chicago Bears', abbr: 'CHI', logo: getTeamLogo('chi') },
+  bengals: { id: 'bengals', name: 'Cincinnati Bengals', abbr: 'CIN', logo: getTeamLogo('cin') },
+  browns: { id: 'browns', name: 'Cleveland Browns', abbr: 'CLE', logo: getTeamLogo('cle') },
+  cowboys: { id: 'cowboys', name: 'Dallas Cowboys', abbr: 'DAL', logo: getTeamLogo('dal') },
+  broncos: { id: 'broncos', name: 'Denver Broncos', abbr: 'DEN', logo: getTeamLogo('den') },
+  lions: { id: 'lions', name: 'Detroit Lions', abbr: 'DET', logo: getTeamLogo('det') },
+  packers: { id: 'packers', name: 'Green Bay Packers', abbr: 'GB', logo: getTeamLogo('gb') },
+  texans: { id: 'texans', name: 'Houston Texans', abbr: 'HOU', logo: getTeamLogo('hou') },
+  colts: { id: 'colts', name: 'Indianapolis Colts', abbr: 'IND', logo: getTeamLogo('ind') },
+  jaguars: { id: 'jaguars', name: 'Jacksonville Jaguars', abbr: 'JAX', logo: getTeamLogo('jax') },
+  chiefs: { id: 'chiefs', name: 'Kansas City Chiefs', abbr: 'KC', logo: getTeamLogo('kc') },
+  raiders: { id: 'raiders', name: 'Las Vegas Raiders', abbr: 'LV', logo: getTeamLogo('lv') },
+  chargers: { id: 'chargers', name: 'Los Angeles Chargers', abbr: 'LAC', logo: getTeamLogo('lac') },
+  rams: { id: 'rams', name: 'Los Angeles Rams', abbr: 'LAR', logo: getTeamLogo('lar') },
+  dolphins: { id: 'dolphins', name: 'Miami Dolphins', abbr: 'MIA', logo: getTeamLogo('mia') },
+  vikings: { id: 'vikings', name: 'Minnesota Vikings', abbr: 'MIN', logo: getTeamLogo('min') },
+  patriots: { id: 'patriots', name: 'New England Patriots', abbr: 'NE', logo: getTeamLogo('ne') },
+  saints: { id: 'saints', name: 'New Orleans Saints', abbr: 'NO', logo: getTeamLogo('no') },
+  giants: { id: 'giants', name: 'New York Giants', abbr: 'NYG', logo: getTeamLogo('nyg') },
+  jets: { id: 'jets', name: 'New York Jets', abbr: 'NYJ', logo: getTeamLogo('nyj') },
+  eagles: { id: 'eagles', name: 'Philadelphia Eagles', abbr: 'PHI', logo: getTeamLogo('phi') },
+  steelers: { id: 'steelers', name: 'Pittsburgh Steelers', abbr: 'PIT', logo: getTeamLogo('pit') },
+  niners: { id: 'niners', name: 'San Francisco 49ers', abbr: 'SF', logo: getTeamLogo('sf') },
+  seahawks: { id: 'seahawks', name: 'Seattle Seahawks', abbr: 'SEA', logo: getTeamLogo('sea') },
+  buccaneers: { id: 'buccaneers', name: 'Tampa Bay Buccaneers', abbr: 'TB', logo: getTeamLogo('tb') },
+  titans: { id: 'titans', name: 'Tennessee Titans', abbr: 'TEN', logo: getTeamLogo('ten') },
+  commanders: { id: 'commanders', name: 'Washington Commanders', abbr: 'WAS', logo: getTeamLogo('wsh') },
+};
+
+// Default team records
+const defaultTeamRecords = {
+  eagles: '6-4', steelers: '8-1', texans: '7-3', titans: '7-3',
+  ravens: '7-3', rams: '6-4', broncos: '6-4', dolphins: '4-6',
+  falcons: '5-3-2', jets: '6-3-1', bills: '5-5', chiefs: '5-5',
+  lions: '6-2-2', bears: '5-5', jaguars: '5-4-1', niners: '5-4-1',
+  colts: '6-3-1', commanders: '7-3', saints: '5-5-1', raiders: '4-7',
+  cardinals: '0-0', panthers: '0-0', bengals: '0-0', browns: '0-0',
+  cowboys: '0-0', packers: '0-0', chargers: '0-0', vikings: '0-0',
+  patriots: '0-0', giants: '0-0', seahawks: '0-0', buccaneers: '0-0',
+};
+
+// Default schedule (used for initialization)
+const defaultSchedule = [
+  { id: 1, homeTeam: 'eagles', awayTeam: 'steelers', status: 'scheduled', isGameOfWeek: true, time: '', homeScore: 0, awayScore: 0 },
+  { id: 2, homeTeam: 'saints', awayTeam: 'raiders', status: 'completed', isGameOfWeek: false, time: '', homeScore: 56, awayScore: 0 },
+  { id: 3, homeTeam: 'texans', awayTeam: 'titans', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 4, homeTeam: 'ravens', awayTeam: 'rams', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 5, homeTeam: 'broncos', awayTeam: 'dolphins', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 6, homeTeam: 'falcons', awayTeam: 'jets', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 7, homeTeam: 'bills', awayTeam: 'chiefs', status: 'rescheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 8, homeTeam: 'lions', awayTeam: 'bears', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 9, homeTeam: 'jaguars', awayTeam: 'niners', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+  { id: 10, homeTeam: 'colts', awayTeam: 'commanders', status: 'scheduled', isGameOfWeek: false, time: '', homeScore: 0, awayScore: 0 },
+];
+
+// Initialize localStorage with defaults only if empty (preserves edits)
+const initializeData = () => {
+  if (!localStorage.getItem('rcl_schedule')) {
+    saveStoredData('rcl_schedule', defaultSchedule);
+  }
+  if (!localStorage.getItem('rcl_team_records')) {
+    saveStoredData('rcl_team_records', defaultTeamRecords);
+  }
+  if (!localStorage.getItem('rcl_week')) {
+    saveStoredData('rcl_week', 11);
+  }
+};
+initializeData();
+
+// Legacy nflTeams for backward compatibility with other components
 const nflTeams = {
   eagles: { name: 'Philadelphia Eagles', abbr: 'PHI', record: '6-4', logo: getTeamLogo('phi') },
   steelers: { name: 'Pittsburgh Steelers', abbr: 'PIT', record: '8-1', logo: getTeamLogo('pit') },
@@ -342,7 +433,7 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-900/90 via-purple-900/10 to-slate-900/90 relative z-10">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-rcl-darker via-rcl-dark to-rcl-darker" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-transparent to-transparent" />
@@ -434,47 +525,108 @@ function Hero() {
 }
 
 function Schedule() {
+  const [schedule, setSchedule] = useState([]);
+  const [teamRecords, setTeamRecords] = useState({});
+  const [currentWeek, setCurrentWeek] = useState(11);
+
+  // Load data and listen for changes
+  useEffect(() => {
+    const loadData = () => {
+      setSchedule(getStoredData('rcl_schedule', defaultSchedule));
+      setTeamRecords(getStoredData('rcl_team_records', defaultTeamRecords));
+      setCurrentWeek(getStoredData('rcl_week', 11));
+    };
+    loadData();
+
+    // Listen for storage changes (from Panel)
+    const handleStorage = () => loadData();
+    window.addEventListener('storage', handleStorage);
+    
+    // Also poll for changes every 2 seconds (for same-tab updates)
+    const interval = setInterval(loadData, 2000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Helper to get team data
+  const getTeam = (teamId) => {
+    const team = allNflTeams[teamId];
+    if (!team) return { name: teamId, abbr: teamId, logo: '' };
+    return { ...team, record: teamRecords[teamId] || '0-0' };
+  };
+
+  // Convert schedule format for display
+  const games = schedule.map(g => ({
+    ...g,
+    home: getTeam(g.homeTeam),
+    away: getTeam(g.awayTeam),
+    isTonight: g.status === 'tonight',
+    isCompleted: g.status === 'completed',
+    isLive: g.status === 'live',
+    rescheduled: g.status === 'rescheduled',
+  }));
+
   return (
-    <section id="schedule" className="py-20 px-4 bg-rcl-darker">
+    <section id="schedule" className="py-20 px-4 bg-slate-900/60 backdrop-blur-sm relative z-10">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-orbitron text-3xl md:text-5xl font-bold mb-4">
-            <span className="gradient-text">WEEK 11</span> SCHEDULE
+            <span className="gradient-text">WEEK {currentWeek}</span> SCHEDULE
           </h2>
           <p className="text-gray-400">Official matchups for this week</p>
         </div>
 
         {/* Tonight's Game */}
-        {scheduleGames.filter(g => g.isTonight).map((game, idx) => (
-          <div key={idx} className="mb-8">
+        {games.filter(g => g.isTonight).map((game, idx) => (
+          <div key={game.id || idx} className="mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
               <div className="live-dot" />
-              <span className="text-green-400 font-orbitron font-bold">TONIGHT @ {game.time}</span>
+              <span className="text-green-400 font-orbitron font-bold">TONIGHT {game.time ? `@ ${game.time}` : ''}</span>
               <div className="live-dot" />
             </div>
-            <div className="glass rounded-2xl p-6 md:p-8 team-card border-2 border-green-500/50 animate-pulse-slow">
+            <div className="glass rounded-2xl p-6 md:p-8 team-card border-2 border-green-500/50 animate-pulse-slow hover:shadow-green-500/30 hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div className="flex-1 text-center">
-                  <img 
-                    src={game.home.logo} 
-                    alt={game.home.name}
-                    className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
-                  />
+                  <img src={game.home.logo} alt={game.home.name} className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain" />
                   <p className="font-semibold text-lg">{game.home.name}</p>
                   <p className="text-gray-400 text-sm">({game.home.record})</p>
                 </div>
                 <div className="px-6">
-                  <div className="flex items-center gap-2">
-                    <div className="live-dot" />
-                    <span className="text-green-400 font-orbitron font-bold text-xl">VS</span>
-                  </div>
+                  <span className="text-green-400 font-orbitron font-bold text-xl">VS</span>
                 </div>
                 <div className="flex-1 text-center">
-                  <img 
-                    src={game.away.logo} 
-                    alt={game.away.name}
-                    className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
-                  />
+                  <img src={game.away.logo} alt={game.away.name} className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain" />
+                  <p className="font-semibold text-lg">{game.away.name}</p>
+                  <p className="text-gray-400 text-sm">({game.away.record})</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* LIVE Game */}
+        {games.filter(g => g.isLive).map((game, idx) => (
+          <div key={game.id || idx} className="mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="live-dot" />
+              <span className="text-red-400 font-orbitron font-bold animate-pulse">🔴 LIVE NOW</span>
+              <div className="live-dot" />
+            </div>
+            <div className="glass rounded-2xl p-6 md:p-8 team-card border-2 border-red-500/50 animate-pulse-slow">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 text-center">
+                  <img src={game.home.logo} alt={game.home.name} className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain" />
+                  <p className="font-semibold text-lg">{game.home.name}</p>
+                  <p className="text-gray-400 text-sm">({game.home.record})</p>
+                </div>
+                <div className="px-6 text-center">
+                  <span className="text-white font-orbitron font-bold text-3xl">{game.homeScore} - {game.awayScore}</span>
+                </div>
+                <div className="flex-1 text-center">
+                  <img src={game.away.logo} alt={game.away.name} className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain" />
                   <p className="font-semibold text-lg">{game.away.name}</p>
                   <p className="text-gray-400 text-sm">({game.away.record})</p>
                 </div>
@@ -484,36 +636,29 @@ function Schedule() {
         ))}
 
         {/* Game of the Week */}
-        {scheduleGames.filter(g => g.isGameOfWeek).map((game, idx) => (
-          <div key={idx} className="mb-8">
+        {games.filter(g => g.isGameOfWeek && !g.isTonight && !g.isLive).map((game, idx) => (
+          <div key={game.id || idx} className="mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Star className="text-rcl-gold w-5 h-5" />
               <span className="text-rcl-gold font-orbitron font-bold">GAME OF THE WEEK</span>
               <Star className="text-rcl-gold w-5 h-5" />
             </div>
-            <div className="glass rounded-2xl p-6 md:p-8 team-card border-2 border-rcl-gold/50">
+            <div className="glass rounded-2xl p-6 md:p-8 team-card border-2 border-rcl-gold/50 hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div className="flex-1 text-center">
-                  <img 
-                    src={game.home.logo} 
-                    alt={game.home.name}
-                    className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
-                  />
+                  <img src={game.home.logo} alt={game.home.name} className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain" />
                   <p className="font-semibold text-lg">{game.home.name}</p>
                   <p className="text-gray-400 text-sm">({game.home.record})</p>
                 </div>
                 <div className="px-6">
-                  <div className="flex items-center gap-2">
-                    <div className="live-dot" />
+                  {game.isCompleted ? (
+                    <span className="text-green-400 font-orbitron font-bold text-2xl">{game.homeScore} - {game.awayScore}</span>
+                  ) : (
                     <span className="text-rcl-red font-orbitron font-bold text-xl">VS</span>
-                  </div>
+                  )}
                 </div>
                 <div className="flex-1 text-center">
-                  <img 
-                    src={game.away.logo} 
-                    alt={game.away.name}
-                    className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain"
-                  />
+                  <img src={game.away.logo} alt={game.away.name} className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 object-contain" />
                   <p className="font-semibold text-lg">{game.away.name}</p>
                   <p className="text-gray-400 text-sm">({game.away.record})</p>
                 </div>
@@ -524,26 +669,21 @@ function Schedule() {
 
         {/* Regular Games */}
         <div className="grid md:grid-cols-2 gap-4">
-          {scheduleGames.filter(g => !g.isGameOfWeek && !g.isTonight).map((game, idx) => (
-            <div key={idx} className="glass rounded-xl p-4 team-card">
+          {games.filter(g => !g.isGameOfWeek && !g.isTonight && !g.isLive).map((game, idx) => (
+            <div key={game.id || idx} className={`glass rounded-xl p-4 team-card hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 border ${game.rescheduled ? 'border-yellow-500/50' : 'border-white/5'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <img 
-                    src={game.home.logo} 
-                    alt={game.home.abbr}
-                    className="w-10 h-10 object-contain"
-                  />
+                  <img src={game.home.logo} alt={game.home.abbr} className="w-10 h-10 object-contain" />
                   <div>
                     <span className="font-medium text-sm md:text-base block">{game.home.name}</span>
                     <span className="text-gray-500 text-xs">({game.home.record})</span>
-                    {game.rescheduled && (
-                      <span className="text-red-500 text-xs font-bold block">RESCHEDULED!</span>
-                    )}
+                    {game.rescheduled && <span className="text-yellow-400 text-xs font-bold block">RESCHEDULED!</span>}
                   </div>
                 </div>
                 <div className="px-3">
                   {game.isCompleted ? (
-                    <span className="text-white font-bold text-lg">
+                    <span className="text-green-400 font-bold text-lg flex items-center gap-1">
+                      <Trophy className="w-4 h-4" />
                       {game.homeScore} - {game.awayScore}
                     </span>
                   ) : (
@@ -555,11 +695,7 @@ function Schedule() {
                     <span className="font-medium text-sm md:text-base block">{game.away.name}</span>
                     <span className="text-gray-500 text-xs">({game.away.record})</span>
                   </div>
-                  <img 
-                    src={game.away.logo} 
-                    alt={game.away.abbr}
-                    className="w-10 h-10 object-contain"
-                  />
+                  <img src={game.away.logo} alt={game.away.abbr} className="w-10 h-10 object-contain" />
                 </div>
               </div>
             </div>
@@ -642,7 +778,7 @@ function Schedule() {
 
 function Champions() {
   return (
-    <section id="champions" className="py-20 px-4 bg-rcl-dark">
+    <section id="champions" className="py-20 px-4 bg-gradient-to-br from-slate-900/80 via-purple-900/10 to-slate-900/80 relative z-10">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-orbitron text-3xl md:text-5xl font-bold mb-4">
@@ -713,7 +849,7 @@ function Champions() {
 
 function HallOfFame() {
   return (
-    <section id="hof" className="py-20 px-4 bg-rcl-darker">
+    <section id="hof" className="py-20 px-4 bg-slate-900/60 backdrop-blur-sm relative z-10">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-orbitron text-3xl md:text-5xl font-bold mb-4">
@@ -1021,7 +1157,7 @@ function Rules() {
   ];
 
   return (
-    <section id="rules" className="py-20 px-4 bg-rcl-darker">
+    <section id="rules" className="py-20 px-4 bg-gradient-to-br from-slate-900/80 via-purple-900/10 to-slate-900/80 relative z-10">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-orbitron text-3xl md:text-5xl font-bold mb-4">
@@ -1196,29 +1332,166 @@ function Join() {
   );
 }
 
-function Footer() {
+// Login Modal Component
+function LoginModal({ isOpen, onClose }) {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    setTimeout(() => {
+      const user = validateCredentials(username, password);
+      if (user) {
+        localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+        onClose();
+        navigate('/panel');
+      } else {
+        setError('Invalid username or password');
+      }
+      setLoading(false);
+    }, 500);
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <footer className="py-8 px-4 bg-rcl-darker border-t border-red-900/30">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/rcl_server_logo.png" alt="RCL Logo" className="w-8 h-8 rounded-full" />
-            <span className="font-orbitron font-bold gradient-text">RCL</span>
-            <span className="text-gray-500">|</span>
-            <span className="text-gray-400 text-sm">Redzone Championship League</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-slate-900 border border-purple-500/30 rounded-2xl p-8 w-full max-w-md shadow-2xl shadow-purple-500/20">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        >
+          <X size={24} />
+        </button>
+
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-purple-400" />
           </div>
-          <div className="text-gray-500 text-sm">
-            Season 4 • $500 Super Bowl Prize • Founded by lastqall
-          </div>
+          <h2 className="font-orbitron text-2xl font-bold text-white">Developer Login</h2>
+          <p className="text-gray-400 text-sm mt-2">Access the admin panel</p>
         </div>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="text-gray-400 text-sm block mb-2">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full bg-slate-800 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+              placeholder="Enter username"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-gray-400 text-sm block mb-2">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-slate-800 border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors pr-12"
+                placeholder="Enter password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <Lock size={18} />
+                Login
+              </>
+            )}
+          </button>
+        </form>
       </div>
-    </footer>
+    </div>
   );
 }
 
-function App() {
+function Footer() {
+  const [showLogin, setShowLogin] = useState(false);
+
+  // Check if already logged in
+  useEffect(() => {
+    const session = localStorage.getItem(AUTH_KEY);
+    if (session) {
+      // User is already logged in
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-rcl-darker overflow-x-hidden">
+    <>
+      <footer className="py-8 px-4 bg-slate-900/80 backdrop-blur-sm border-t border-purple-500/20 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img src="/rcl_server_logo.png" alt="RCL Logo" className="w-8 h-8 rounded-full" />
+              <span className="font-orbitron font-bold gradient-text">RCL</span>
+              <span className="text-gray-500">|</span>
+              <span className="text-gray-400 text-sm">Redzone Championship League</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-gray-500 text-sm">
+                Season 4 • $500 Super Bowl Prize • Founded by lastqall
+              </div>
+              <button
+                onClick={() => setShowLogin(true)}
+                className="text-gray-600 hover:text-purple-400 transition-colors flex items-center gap-1 text-xs"
+              >
+                <Lock size={12} />
+                Dev
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
+      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
+    </>
+  );
+}
+
+// Main Site Component
+function MainSite() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 overflow-x-hidden relative">
+      {/* Animated background particles */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}} />
+      </div>
       <Navbar />
       <main className="overflow-x-hidden">
         <Hero />
@@ -1234,6 +1507,17 @@ function App() {
       <Footer />
       <LikeButton />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MainSite />} />
+        <Route path="/panel" element={<Panel />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
