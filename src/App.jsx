@@ -297,7 +297,7 @@ function LikeButton() {
     <button
       onClick={handleLike}
       disabled={hasLiked}
-      className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300 ${
+      className={`fixed bottom-6 left-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300 ${
         hasLiked 
           ? 'bg-rcl-red text-white cursor-default' 
           : 'bg-white/10 backdrop-blur-md text-white hover:bg-rcl-red hover:scale-105 cursor-pointer'
