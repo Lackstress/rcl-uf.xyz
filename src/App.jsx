@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import { 
-  Trophy, Users, Calendar, Shield, ExternalLink, 
+import {
+  Trophy, Users, Calendar, Shield, ExternalLink,
   ChevronDown, Menu, X, Twitch, Youtube, FileText,
   MessageCircle, BarChart3, Star, Zap, Heart, Award, Crown, Target, Swords, Lock, Eye, EyeOff
 } from 'lucide-react';
@@ -96,19 +96,19 @@ const initializeData = () => {
   if (!localStorage.getItem('rcl_week')) {
     saveStoredData('rcl_week', 11);
   }
-  
+
   // Validate data integrity on load
   try {
     const schedule = getStoredData('rcl_schedule', []);
     const teamRecords = getStoredData('rcl_team_records', {});
     const week = getStoredData('rcl_week', 11);
-    
+
     // Ensure schedule has valid structure
     if (!Array.isArray(schedule) || schedule.length === 0) {
       console.warn('Invalid schedule data found, resetting to defaults');
       saveStoredData('rcl_schedule', defaultSchedule);
     }
-    
+
     // Ensure team records has all teams
     const missingTeams = Object.keys(defaultTeamRecords).filter(team => !teamRecords[team]);
     if (missingTeams.length > 0) {
@@ -116,7 +116,7 @@ const initializeData = () => {
       const updatedRecords = { ...defaultTeamRecords, ...teamRecords };
       saveStoredData('rcl_team_records', updatedRecords);
     }
-    
+
   } catch (error) {
     console.error('Error validating stored data:', error);
     // Reset to defaults if corrupted
@@ -298,7 +298,7 @@ function LikeButton() {
     // Load likes from localStorage
     const storedLikes = localStorage.getItem('rcl_likes');
     const userLiked = localStorage.getItem('rcl_user_liked');
-    
+
     if (storedLikes) {
       setLikes(parseInt(storedLikes, 10));
     }
@@ -309,15 +309,15 @@ function LikeButton() {
 
   const handleLike = () => {
     if (hasLiked) return;
-    
+
     setIsAnimating(true);
     const newLikes = likes + 1;
     setLikes(newLikes);
     setHasLiked(true);
-    
+
     localStorage.setItem('rcl_likes', newLikes.toString());
     localStorage.setItem('rcl_user_liked', 'true');
-    
+
     setTimeout(() => setIsAnimating(false), 300);
   };
 
@@ -325,14 +325,13 @@ function LikeButton() {
     <button
       onClick={handleLike}
       disabled={hasLiked}
-      className={`fixed bottom-6 left-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300 ${
-        hasLiked 
-          ? 'bg-rcl-red text-white cursor-default' 
-          : 'bg-white/10 backdrop-blur-md text-white hover:bg-rcl-red hover:scale-105 cursor-pointer'
-      } ${isAnimating ? 'scale-125' : ''}`}
+      className={`fixed bottom-6 left-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300 ${hasLiked
+        ? 'bg-rcl-red text-white cursor-default'
+        : 'bg-white/10 backdrop-blur-md text-white hover:bg-rcl-red hover:scale-105 cursor-pointer'
+        } ${isAnimating ? 'scale-125' : ''}`}
     >
-      <Heart 
-        className={`w-5 h-5 transition-all ${hasLiked ? 'fill-white' : ''} ${isAnimating ? 'animate-ping' : ''}`} 
+      <Heart
+        className={`w-5 h-5 transition-all ${hasLiked ? 'fill-white' : ''} ${isAnimating ? 'animate-ping' : ''}`}
       />
       <span className="font-semibold">{likes}</span>
     </button>
@@ -383,7 +382,7 @@ const rules = [
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'Schedule', href: '#schedule' },
@@ -401,7 +400,7 @@ function Navbar() {
             <img src="/rcl_server_logo.png" alt="RCL Logo" className="w-10 h-10 rounded-full" />
             <span className="font-orbitron font-bold text-xl gradient-text">RCL</span>
           </div>
-          
+
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <a
@@ -465,7 +464,7 @@ function Hero() {
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-rcl-darker via-rcl-dark to-rcl-darker" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-transparent to-transparent" />
-      
+
       {/* Animated grid */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
@@ -477,9 +476,9 @@ function Hero() {
       <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
         <div className="mb-8 flex justify-center">
           <div className="relative">
-            <img 
-              src="/rcl_server_logo.png" 
-              alt="RCL Logo" 
+            <img
+              src="/rcl_server_logo.png"
+              alt="RCL Logo"
               className="w-32 h-32 md:w-40 md:h-40 rounded-full pulse-ring"
             />
             <div className="absolute -inset-4 bg-rcl-red/20 rounded-full blur-xl animate-pulse" />
@@ -595,10 +594,10 @@ function Schedule() {
     // Listen for storage changes (from Panel)
     const handleStorage = () => loadData();
     window.addEventListener('storage', handleStorage);
-    
-    // Also poll for changes every 5 seconds (for same-tab updates) - optimized for performance
-    const interval = setInterval(loadData, 5000);
-    
+
+    // Also poll for changes every 10 seconds (optimized for performance)
+    const interval = setInterval(loadData, 10000);
+
     return () => {
       window.removeEventListener('storage', handleStorage);
       clearInterval(interval);
@@ -724,22 +723,19 @@ function Schedule() {
         {/* Regular Games */}
         <div className="grid md:grid-cols-2 gap-4">
           {games.filter(g => !g.isGameOfWeek && !g.isTonight && !g.isLive).map((game, idx) => (
-            <div 
-              key={game.id || idx} 
-              className={`glass rounded-xl p-4 team-card hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 border ${
-                game.rescheduled ? 'border-yellow-500/50' : 'border-white/5'
-              } ${
-                isVisible 
-                  ? idx % 2 === 0 
-                    ? 'slide-in-left enhanced-hover' 
+            <div
+              key={game.id || idx}
+              className={`glass rounded-xl p-4 team-card hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 border ${game.rescheduled ? 'border-yellow-500/50' : 'border-white/5'
+                } ${isVisible
+                  ? idx % 2 === 0
+                    ? 'slide-in-left enhanced-hover'
                     : 'slide-in-right enhanced-hover'
                   : 'opacity-0'
-              } stagger-${(idx % 6) + 1}`}
+                } stagger-${(idx % 6) + 1}`}
             >
               <div className="flex items-center justify-between">
-                <div className={`flex items-center gap-3 flex-1 ${
-                  isVisible && idx % 2 === 0 ? 'slide-in-left-delayed' : ''
-                }`}>
+                <div className={`flex items-center gap-3 flex-1 ${isVisible && idx % 2 === 0 ? 'slide-in-left-delayed' : ''
+                  }`}>
                   <img src={game.home.logo} alt={game.home.abbr} className="w-10 h-10 object-contain pulse-hover" />
                   <div>
                     <span className="font-medium text-sm md:text-base block">{game.home.name}</span>
@@ -757,9 +753,8 @@ function Schedule() {
                     <span className="text-rcl-red font-bold text-sm">VS</span>
                   )}
                 </div>
-                <div className={`flex items-center gap-3 flex-1 justify-end ${
-                  isVisible && idx % 2 === 1 ? 'slide-in-right-delayed' : ''
-                }`}>
+                <div className={`flex items-center gap-3 flex-1 justify-end ${isVisible && idx % 2 === 1 ? 'slide-in-right-delayed' : ''
+                  }`}>
                   <div className="text-right">
                     <span className="font-medium text-sm md:text-base block">{game.away.name}</span>
                     <span className="text-gray-500 text-xs">({game.away.record})</span>
@@ -777,7 +772,7 @@ function Schedule() {
             <span className="gradient-text">PLAYOFF</span> PICTURE
           </h3>
           <p className="text-gray-500 text-center text-sm mb-6">12 Team Playoff Format • Division Winners get Bye</p>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             {/* AFC */}
             <div className="glass rounded-xl p-5">
@@ -890,7 +885,7 @@ function Champions() {
                 <span className="font-orbitron font-bold text-rcl-gold text-xl">SEASON {sb.season} SUPER BOWL</span>
                 <Trophy className="text-rcl-gold w-6 h-6" />
               </div>
-              
+
               <div className="flex items-center justify-between mb-6">
                 <div className="flex-1 text-center">
                   <div className="relative inline-block">
@@ -903,12 +898,12 @@ function Champions() {
                   <p className="text-gray-400 text-sm">#{sb.winner.seed} Seed</p>
                   <p className="text-4xl font-orbitron font-bold text-white mt-2">{sb.winner.score}</p>
                 </div>
-                
+
                 <div className="px-4 text-center">
                   <div className="text-gray-500 text-sm mb-1">{sb.date}</div>
                   <div className="text-2xl font-orbitron text-gray-600">VS</div>
                 </div>
-                
+
                 <div className="flex-1 text-center">
                   <img src={sb.loser.logo} alt={sb.loser.team} className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain opacity-75" />
                   <p className="font-bold text-lg mt-2 text-gray-400">{sb.loser.team}</p>
@@ -1019,7 +1014,7 @@ function HallOfFame() {
 
 function Awards() {
   const [selectedSeason, setSelectedSeason] = useState('s3');
-  
+
   const positionalAwards = {
     s1: [
       { pos: 'QB', player: 'Coolguysonic' },
@@ -1073,18 +1068,17 @@ function Awards() {
             <span className="gradient-text">SEASON</span> AWARDS
           </h2>
           <p className="text-gray-400 mb-6">Recognizing the best performers each season</p>
-          
+
           {/* Season Selector */}
           <div className="flex justify-center gap-2">
             {['s1', 's2', 's3'].map((s) => (
               <button
                 key={s}
                 onClick={() => setSelectedSeason(s)}
-                className={`px-4 py-2 rounded-lg font-orbitron font-bold transition-all ${
-                  selectedSeason === s 
-                    ? 'bg-rcl-red text-white' 
-                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
-                }`}
+                className={`px-4 py-2 rounded-lg font-orbitron font-bold transition-all ${selectedSeason === s
+                  ? 'bg-rcl-red text-white'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                  }`}
               >
                 {s.toUpperCase()}
               </button>
@@ -1133,7 +1127,7 @@ function Awards() {
 
 function RecordBook() {
   const [category, setCategory] = useState('passing');
-  
+
   const categories = [
     { id: 'passing', name: 'Passing', icon: '🏈' },
     { id: 'rushing', name: 'Rushing', icon: '🏃' },
@@ -1157,11 +1151,10 @@ function RecordBook() {
             <button
               key={cat.id}
               onClick={() => setCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                category === cat.id 
-                  ? 'bg-rcl-red text-white' 
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${category === cat.id
+                ? 'bg-rcl-red text-white'
+                : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                }`}
             >
               <span>{cat.icon}</span>
               {cat.name}
@@ -1259,7 +1252,7 @@ function Rules() {
             <span className="gradient-text">LEAGUE</span> RULES
           </h2>
           <p className="text-gray-400">Code of conduct and game regulations</p>
-          
+
           {/* Links Section */}
           <div className="flex flex-wrap justify-center gap-4 mt-6">
             {ruleLinks.map((link, idx) => (
@@ -1280,7 +1273,7 @@ function Rules() {
             ))}
           </div>
         </div>
-        
+
         <p className="text-center text-gray-500 text-sm mb-6">SERVER RULES QUICK REFERENCE</p>
 
         <div className="space-y-4">
@@ -1294,9 +1287,9 @@ function Rules() {
                   <Shield className="text-rcl-red w-5 h-5" />
                   <span className="font-semibold text-lg">{section.title}</span>
                 </div>
-                <ChevronDown 
-                  className={`text-gray-400 transition-transform ${openSection === idx ? 'rotate-180' : ''}`} 
-                  size={20} 
+                <ChevronDown
+                  className={`text-gray-400 transition-transform ${openSection === idx ? 'rotate-180' : ''}`}
+                  size={20}
                 />
               </button>
               {openSection === idx && (
@@ -1375,8 +1368,8 @@ function Join() {
             </h3>
             <div className="glass rounded-xl p-6">
               <div className="flex items-center gap-4 mb-6">
-                <img 
-                  src="/founders_pfp.png" 
+                <img
+                  src="/founders_pfp.png"
                   alt="lastqall"
                   className="w-16 h-16 rounded-full object-cover"
                 />
@@ -1413,7 +1406,7 @@ function Join() {
                   className="flex items-center gap-3 p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors group"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
                   </svg>
                   <span>TikTok</span>
                   <ExternalLink className="ml-auto text-gray-500 group-hover:text-white" size={16} />
@@ -1580,7 +1573,7 @@ function Footer() {
 // Particle effect component - optimized for performance
 function ParticleEffects() {
   const [particles, setParticles] = useState([]);
-  
+
   useEffect(() => {
     const createParticle = () => {
       const newParticle = {
@@ -1589,10 +1582,10 @@ function ParticleEffects() {
         animationDelay: Math.random() * 10,
         animationDuration: 10 + Math.random() * 10
       };
-      setParticles(prev => [...prev.slice(-10), newParticle]); // Reduced from 20 to 10
+      setParticles(prev => [...prev.slice(-5), newParticle]); // Reduced from 10 to 5
     };
 
-    const interval = setInterval(createParticle, 4000); // Reduced from 2000 to 4000ms
+    const interval = setInterval(createParticle, 6000); // Increased from 4000 to 6000ms
     return () => clearInterval(interval);
   }, []);
 
@@ -1601,7 +1594,7 @@ function ParticleEffects() {
       {particles.map(particle => (
         <div
           key={particle.id}
-          className="particle"
+          className="particle gpu-accelerated"
           style={{
             left: `${particle.left}%`,
             animationDelay: `${particle.animationDelay}s`,
@@ -1613,24 +1606,33 @@ function ParticleEffects() {
   );
 }
 
-// Parallax background component
+// Parallax background component - optimized with throttling
 function ParallaxBackground() {
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setOffset(window.pageYOffset);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setOffset(window.pageYOffset);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div 
-      className="logo-background"
+    <div
+      className="logo-background gpu-accelerated"
       style={{
-        transform: `translateY(${offset * 0.5}px)`
+        transform: `translate3d(0, ${offset * 0.3}px, 0)`,
+        willChange: 'transform'
       }}
     />
   );
@@ -1640,13 +1642,13 @@ function ParallaxBackground() {
 function MainSite() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 overflow-x-hidden relative">
-      
+
       {/* Parallax logo background */}
       <ParallaxBackground />
-      
+
       {/* Particle effects */}
       <ParticleEffects />
-      
+
       {/* Enhanced animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse floating" />
@@ -1654,7 +1656,7 @@ function MainSite() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl animate-pulse floating stagger-4" />
         <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-rcl-red/5 rounded-full blur-3xl animate-pulse floating stagger-6" />
       </div>
-      
+
       <Navbar />
       <main className="overflow-x-hidden relative z-10">
         <Hero />

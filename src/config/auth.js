@@ -15,6 +15,7 @@ export const developers = [
   { username: 'mickeymouse', passwordHash: hashPassword('mickeyisweird'), role: 'admin' },
   { username: 'cova', passwordHash: hashPassword('covaisautism'), role: 'admin' },
   { username: 'lackstress', passwordHash: hashPassword('1234567'), role: 'owner' },
+  { username: 'sumo', passwordHash: hashPassword('sumoisaballer'), role: 'admin' },
 ];
 
 export const validateCredentials = (username, password) => {

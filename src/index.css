@@ -58,11 +58,19 @@ body {
   background-clip: text;
 }
 
-/* Glass effect */
+/* Glass effect - Enhanced */
 .glass {
-  background: rgba(15, 15, 15, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.glass:hover {
+  background: rgba(15, 15, 15, 0.9);
+  border-color: rgba(220, 38, 38, 0.5);
+  box-shadow: 0 12px 48px rgba(220, 38, 38, 0.2);
 }
 
 /* Animated border */
@@ -83,38 +91,48 @@ body {
 }
 
 @keyframes borderMove {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
 }
 
-/* Pulse ring */
+/* Pulse ring - GPU accelerated */
 .pulse-ring {
   animation: pulseRing 2s ease-out infinite;
+  will-change: transform, box-shadow;
 }
 
 @keyframes pulseRing {
   0% {
-    transform: scale(0.95);
+    transform: scale3d(0.95, 0.95, 1);
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
   }
+
   70% {
-    transform: scale(1);
+    transform: scale3d(1, 1, 1);
     box-shadow: 0 0 0 15px rgba(220, 38, 38, 0);
   }
+
   100% {
-    transform: scale(0.95);
+    transform: scale3d(0.95, 0.95, 1);
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
   }
 }
 
-/* Team card hover */
+/* Team card hover - GPU Accelerated */
 .team-card {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .team-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(220, 38, 38, 0.3);
+  transform: translate3d(0, -8px, 0) scale3d(1.02, 1.02, 1);
+  box-shadow: 0 25px 50px rgba(220, 38, 38, 0.4),
+    0 0 30px rgba(147, 51, 234, 0.3);
 }
 
 /* Live indicator */
@@ -127,8 +145,17 @@ body {
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
 }
 
 /* Parallax logo background - optimized */
@@ -207,23 +234,48 @@ body {
   border-color: rgba(220, 38, 38, 0.5);
 }
 
-/* Floating animation */
+/* Floating animation - GPU Accelerated */
 .floating {
   animation: float 6s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -20px, 0);
+  }
 }
 
 /* Staggered animation delays */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
-.stagger-6 { animation-delay: 0.6s; }
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+}
+
+.stagger-6 {
+  animation-delay: 0.6s;
+}
 
 /* Custom cursor effect removed for performance */
 
@@ -235,8 +287,13 @@ body {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Particle container */
@@ -264,12 +321,15 @@ body {
     transform: translateY(100vh) rotate(0deg);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     transform: translateY(-100px) rotate(360deg);
     opacity: 0;
@@ -282,9 +342,17 @@ body {
 }
 
 @keyframes pulseHover {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Loading skeleton */
@@ -296,8 +364,13 @@ body {
 }
 
 @keyframes skeletonLoading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Loading spinner */
@@ -311,8 +384,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Fade in animation */
@@ -321,8 +399,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Scale in animation */
@@ -331,8 +416,15 @@ body {
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Glow pulse effect */
@@ -341,9 +433,17 @@ body {
 }
 
 @keyframes glowPulse {
-  0% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(220, 38, 38, 0.6); }
-  100% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.3); }
+  0% {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(220, 38, 38, 0.6);
+  }
+
+  100% {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  }
 }
 
 /* Typewriter effect */
@@ -355,11 +455,156 @@ body {
 }
 
 @keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50% { border-color: #DC2626; }
+
+  from,
+  to {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: #DC2626;
+  }
+}
+
+/* Modern Button Effects */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-glow:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(220, 38, 38, 0.6),
+    0 0 40px rgba(220, 38, 38, 0.4),
+    inset 0 0 20px rgba(220, 38, 38, 0.2);
+}
+
+/* Neon Glow Effect */
+.neon-glow {
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.8),
+    0 0 20px rgba(220, 38, 38, 0.6),
+    0 0 30px rgba(220, 38, 38, 0.4);
+  animation: neonPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes neonPulse {
+  from {
+    text-shadow: 0 0 10px rgba(220, 38, 38, 0.8),
+      0 0 20px rgba(220, 38, 38, 0.6),
+      0 0 30px rgba(220, 38, 38, 0.4);
+  }
+
+  to {
+    text-shadow: 0 0 15px rgba(220, 38, 38, 1),
+      0 0 30px rgba(220, 38, 38, 0.8),
+      0 0 45px rgba(220, 38, 38, 0.6);
+  }
+}
+
+/* Card Hover 3D Effect */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-3d:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translate3d(0, -10px, 20px);
+}
+
+/* Smooth Scale Animation */
+@keyframes smoothScale {
+
+  0%,
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.05, 1.05, 1);
+  }
+}
+
+/* Gradient Animation */
+.animated-gradient {
+  background: linear-gradient(-45deg, #DC2626, #7C3AED, #0EA5E9, #F59E0B);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Enhanced Glassmorphism */
+.glass-premium {
+  background: rgba(15, 15, 15, 0.7);
+  backdrop-filter: blur(20px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Shimmer on Hover */
+.shimmer-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.shimmer-hover:hover::after {
+  left: 100%;
+}
+
+/* Performance Optimizations */
+.gpu-accelerated {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
