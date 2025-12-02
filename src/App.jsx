@@ -96,6 +96,34 @@ const initializeData = () => {
   if (!localStorage.getItem('rcl_week')) {
     saveStoredData('rcl_week', 11);
   }
+  
+  // Validate data integrity on load
+  try {
+    const schedule = getStoredData('rcl_schedule', []);
+    const teamRecords = getStoredData('rcl_team_records', {});
+    const week = getStoredData('rcl_week', 11);
+    
+    // Ensure schedule has valid structure
+    if (!Array.isArray(schedule) || schedule.length === 0) {
+      console.warn('Invalid schedule data found, resetting to defaults');
+      saveStoredData('rcl_schedule', defaultSchedule);
+    }
+    
+    // Ensure team records has all teams
+    const missingTeams = Object.keys(defaultTeamRecords).filter(team => !teamRecords[team]);
+    if (missingTeams.length > 0) {
+      console.warn('Missing team records found, adding defaults');
+      const updatedRecords = { ...defaultTeamRecords, ...teamRecords };
+      saveStoredData('rcl_team_records', updatedRecords);
+    }
+    
+  } catch (error) {
+    console.error('Error validating stored data:', error);
+    // Reset to defaults if corrupted
+    saveStoredData('rcl_schedule', defaultSchedule);
+    saveStoredData('rcl_team_records', defaultTeamRecords);
+    saveStoredData('rcl_week', 11);
+  }
 };
 initializeData();
 
@@ -528,6 +556,32 @@ function Schedule() {
   const [schedule, setSchedule] = useState([]);
   const [teamRecords, setTeamRecords] = useState({});
   const [currentWeek, setCurrentWeek] = useState(11);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Intersection Observer for slide-in animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const scheduleElement = document.getElementById('schedule');
+    if (scheduleElement) {
+      observer.observe(scheduleElement);
+    }
+
+    return () => {
+      if (scheduleElement) {
+        observer.unobserve(scheduleElement);
+      }
+    };
+  }, []);
 
   // Load data and listen for changes
   useEffect(() => {
@@ -542,8 +596,8 @@ function Schedule() {
     const handleStorage = () => loadData();
     window.addEventListener('storage', handleStorage);
     
-    // Also poll for changes every 2 seconds (for same-tab updates)
-    const interval = setInterval(loadData, 2000);
+    // Also poll for changes every 5 seconds (for same-tab updates) - optimized for performance
+    const interval = setInterval(loadData, 5000);
     
     return () => {
       window.removeEventListener('storage', handleStorage);
@@ -670,10 +724,23 @@ function Schedule() {
         {/* Regular Games */}
         <div className="grid md:grid-cols-2 gap-4">
           {games.filter(g => !g.isGameOfWeek && !g.isTonight && !g.isLive).map((game, idx) => (
-            <div key={game.id || idx} className={`glass rounded-xl p-4 team-card hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 border ${game.rescheduled ? 'border-yellow-500/50' : 'border-white/5'}`}>
+            <div 
+              key={game.id || idx} 
+              className={`glass rounded-xl p-4 team-card hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 border ${
+                game.rescheduled ? 'border-yellow-500/50' : 'border-white/5'
+              } ${
+                isVisible 
+                  ? idx % 2 === 0 
+                    ? 'slide-in-left enhanced-hover' 
+                    : 'slide-in-right enhanced-hover'
+                  : 'opacity-0'
+              } stagger-${(idx % 6) + 1}`}
+            >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <img src={game.home.logo} alt={game.home.abbr} className="w-10 h-10 object-contain" />
+                <div className={`flex items-center gap-3 flex-1 ${
+                  isVisible && idx % 2 === 0 ? 'slide-in-left-delayed' : ''
+                }`}>
+                  <img src={game.home.logo} alt={game.home.abbr} className="w-10 h-10 object-contain pulse-hover" />
                   <div>
                     <span className="font-medium text-sm md:text-base block">{game.home.name}</span>
                     <span className="text-gray-500 text-xs">({game.home.record})</span>
@@ -690,12 +757,14 @@ function Schedule() {
                     <span className="text-rcl-red font-bold text-sm">VS</span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 flex-1 justify-end">
+                <div className={`flex items-center gap-3 flex-1 justify-end ${
+                  isVisible && idx % 2 === 1 ? 'slide-in-right-delayed' : ''
+                }`}>
                   <div className="text-right">
                     <span className="font-medium text-sm md:text-base block">{game.away.name}</span>
                     <span className="text-gray-500 text-xs">({game.away.record})</span>
                   </div>
-                  <img src={game.away.logo} alt={game.away.abbr} className="w-10 h-10 object-contain" />
+                  <img src={game.away.logo} alt={game.away.abbr} className="w-10 h-10 object-contain pulse-hover" />
                 </div>
               </div>
             </div>
@@ -777,10 +846,36 @@ function Schedule() {
 }
 
 function Champions() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const championsElement = document.getElementById('champions');
+    if (championsElement) {
+      observer.observe(championsElement);
+    }
+
+    return () => {
+      if (championsElement) {
+        observer.unobserve(championsElement);
+      }
+    };
+  }, []);
+
   return (
     <section id="champions" className="py-20 px-4 bg-gradient-to-br from-slate-900/80 via-purple-900/10 to-slate-900/80 relative z-10">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
+        <div className={`text-center mb-12 ${isVisible ? 'slide-in-left' : 'opacity-0'}`}>
           <h2 className="font-orbitron text-3xl md:text-5xl font-bold mb-4">
             <span className="gradient-text">SUPER BOWL</span> CHAMPIONS
           </h2>
@@ -789,7 +884,7 @@ function Champions() {
 
         <div className="space-y-6">
           {superBowls.map((sb, idx) => (
-            <div key={idx} className="glass rounded-2xl p-6 team-card">
+            <div key={idx} className={`glass rounded-2xl p-6 team-card ${isVisible ? `slide-in-left stagger-${(idx % 4) + 1}` : 'opacity-0'}`}>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Trophy className="text-rcl-gold w-6 h-6" />
                 <span className="font-orbitron font-bold text-rcl-gold text-xl">SEASON {sb.season} SUPER BOWL</span>
@@ -1482,18 +1577,86 @@ function Footer() {
   );
 }
 
+// Particle effect component - optimized for performance
+function ParticleEffects() {
+  const [particles, setParticles] = useState([]);
+  
+  useEffect(() => {
+    const createParticle = () => {
+      const newParticle = {
+        id: Math.random(),
+        left: Math.random() * 100,
+        animationDelay: Math.random() * 10,
+        animationDuration: 10 + Math.random() * 10
+      };
+      setParticles(prev => [...prev.slice(-10), newParticle]); // Reduced from 20 to 10
+    };
+
+    const interval = setInterval(createParticle, 4000); // Reduced from 2000 to 4000ms
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="particles">
+      {particles.map(particle => (
+        <div
+          key={particle.id}
+          className="particle"
+          style={{
+            left: `${particle.left}%`,
+            animationDelay: `${particle.animationDelay}s`,
+            animationDuration: `${particle.animationDuration}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Parallax background component
+function ParallaxBackground() {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setOffset(window.pageYOffset);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div 
+      className="logo-background"
+      style={{
+        transform: `translateY(${offset * 0.5}px)`
+      }}
+    />
+  );
+}
+
 // Main Site Component
 function MainSite() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 overflow-x-hidden relative">
-      {/* Animated background particles */}
+      
+      {/* Parallax logo background */}
+      <ParallaxBackground />
+      
+      {/* Particle effects */}
+      <ParticleEffects />
+      
+      {/* Enhanced animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}} />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse floating" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse floating stagger-2" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl animate-pulse floating stagger-4" />
+        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-rcl-red/5 rounded-full blur-3xl animate-pulse floating stagger-6" />
       </div>
+      
       <Navbar />
-      <main className="overflow-x-hidden">
+      <main className="overflow-x-hidden relative z-10">
         <Hero />
         <Schedule />
         <Champions />

@@ -3,17 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import { 
   LogOut, Save, Plus, Trash2, Calendar, FileText, Link as LinkIcon, 
   Shield, Settings, Trophy, Clock, CheckCircle, 
-  ChevronDown, ChevronUp, X, Users, Star, Zap
+  ChevronDown, ChevronUp, X, Users, Star, Zap, Database
 } from 'lucide-react';
 import { AUTH_KEY } from '../config/auth';
+import PanelSettings from './PanelSettings';
 
 const getStoredData = (key, defaultValue) => {
-  const stored = localStorage.getItem(key);
-  return stored ? JSON.parse(stored) : defaultValue;
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : defaultValue;
+  } catch (error) {
+    console.error(`Error reading ${key} from localStorage:`, error);
+    return defaultValue;
+  }
 };
 
 const saveData = (key, data) => {
-  localStorage.setItem(key, JSON.stringify(data));
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    // Trigger storage event for cross-tab synchronization
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: key,
+      newValue: JSON.stringify(data),
+      oldValue: null
+    }));
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
 };
 
 // All 32 NFL Teams
@@ -105,12 +121,58 @@ function Panel() {
     { id: 1, title: 'Prohibited Behavior', items: ['No NSFW content', 'No racial slurs', 'No doxxing'] },
     { id: 2, title: 'Game Rules', items: ['7v7+ only', '9v9 standard', 'Must have referee'] },
   ]));
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [lastSaveTime, setLastSaveTime] = useState(null);
 
   useEffect(() => {
     const session = localStorage.getItem(AUTH_KEY);
     if (!session) { navigate('/'); return; }
     try { setUser(JSON.parse(session)); } catch { navigate('/'); }
   }, [navigate]);
+
+  // Auto-save functionality - optimized for performance
+  useEffect(() => {
+    if (!autoSaveEnabled) return;
+    
+    const saveTimeout = setTimeout(() => {
+      handleSave('all');
+      setLastSaveTime(new Date());
+    }, 3000); // Auto-save after 3 seconds of inactivity (optimized)
+
+    return () => clearTimeout(saveTimeout);
+  }, [currentWeek, schedule, teamRecords, links, rules, autoSaveEnabled]);
+
+  // Listen for storage events from other tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key) {
+        // Reload data when it changes in another tab
+        const key = e.key;
+        if (key.startsWith('rcl_')) {
+          switch(key) {
+            case 'rcl_week':
+              setCurrentWeek(getStoredData('rcl_week', 11));
+              break;
+            case 'rcl_schedule':
+              setSchedule(getStoredData('rcl_schedule', []));
+              break;
+            case 'rcl_team_records':
+              setTeamRecords(getStoredData('rcl_team_records', defaultTeamRecords));
+              break;
+            case 'rcl_all_links':
+              setLinks(getStoredData('rcl_all_links', defaultLinks));
+              break;
+            case 'rcl_rules':
+              setRules(getStoredData('rcl_rules', []));
+              break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleLogout = () => { localStorage.removeItem(AUTH_KEY); navigate('/'); };
 
@@ -229,6 +291,32 @@ function Panel() {
           </div>
         </div>
 
+        {/* Auto-save Status */}
+        <div className="glass rounded-xl p-3 mb-6 border border-purple-500/20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className={`w-3 h-3 rounded-full ${autoSaveEnabled ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
+              {autoSaveEnabled && <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-500 animate-ping" />}
+            </div>
+            <div>
+              <span className="text-white font-medium">Auto-save {autoSaveEnabled ? 'Enabled' : 'Disabled'}</span>
+              {lastSaveTime && (
+                <p className="text-gray-500 text-xs">Last saved: {lastSaveTime.toLocaleTimeString()}</p>
+              )}
+            </div>
+          </div>
+          <button 
+            onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              autoSaveEnabled 
+                ? 'bg-green-600 hover:bg-green-700 text-white' 
+                : 'bg-gray-600 hover:bg-gray-700 text-gray-300'
+            }`}
+          >
+            {autoSaveEnabled ? 'Disable' : 'Enable'}
+          </button>
+        </div>
+
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
           {[
@@ -236,6 +324,7 @@ function Panel() {
             { id: 'records', name: 'Records', icon: Trophy },
             { id: 'links', name: 'Links', icon: LinkIcon },
             { id: 'rules', name: 'Rules', icon: Shield },
+            { id: 'settings', name: 'Settings', icon: Database },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${activeTab === tab.id ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-gray-400 hover:bg-slate-700/50'}`}>
@@ -536,6 +625,11 @@ function Panel() {
                 </button>
               </div>
             </div>
+          )}
+
+          {/* SETTINGS */}
+          {activeTab === 'settings' && (
+            <PanelSettings onBack={() => setActiveTab('schedule')} />
           )}
         </div>
 
